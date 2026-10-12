@@ -6,7 +6,7 @@ header{display:flex;justify-content:space-between;padding:10px 14px;font-size:12
 #log{height:30vh;overflow:auto;padding:8px 14px}#log p{margin:5px 0;padding:6px 10px;border-left:2px solid #22d3ee;background:#0e283c73;border-radius:0 8px 8px 0}#log p.u{border-color:#4b7a8a;color:#8fb3bf}
 .r{display:flex;gap:8px;padding:8px 14px 12px}input{flex:1;min-width:0;background:#0e283c73;border:1px solid #22d3ee66;color:inherit;padding:12px;border-radius:10px;font:inherit;font-size:16px}
 button{background:#0e283c73;border:1px solid #22d3ee;color:#22d3ee;border-radius:10px;padding:0 14px;font-size:18px}button.on{background:#22d3ee;color:#021018}
-#lg{position:fixed;inset:0;background:#030a14;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:24px}#lg[hidden]{display:none}#lg input{flex:none;width:100%;max-width:320px}
+#lg{z-index:10;position:fixed;inset:0;background:#030a14;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:24px}#lg[hidden]{display:none}#lg input{flex:none;width:100%;max-width:320px}
 </style></head><body>
 <div id='lg' hidden><b style='letter-spacing:.3em;color:#22d3ee'>J.A.R.V.I.S</b><input id='pw' type='password' placeholder='Parol'><button id='ok' style='padding:10px 24px'>Kirish</button><small id='er' style='color:#f87171'></small></div>
 <header><span>J.A.R.V.I.S</span><span id='clk'></span></header>
