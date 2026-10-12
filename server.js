@@ -38,4 +38,18 @@ const nl=String.fromCharCode(10);
 const sys=`Sen Jarvis, foydalanuvchining shaxsiy AI yordamchisisan. O'zbek tilida (lotin yozuvi) qisqa va aniq javob ber: 1-4 gap, emoji va markdown ishlatma. Foydalanuvchi telefon va kompyuterdan yozadi, suhbat va xotira ikkalasida umumiy, shuning uchun bir qurilmada boshlangan ishni ikkinchisida davom ettira olasan. Muhim narsalarni eslab_qol vositasi bilan saqla. Hozir: ${new Date().toLocaleString('uz-UZ',{timeZone:'Asia/Tashkent'})} (Toshkent).${nl}Doimiy xotira:${nl}${f.rows.map(x=>'- '+x.text).join(nl)||`(hali bo'sh)`}`;
 let out='';if(USE_GEMINI)out=await askGemini(msgs,sys);else for(let i=0;i<4;i++){const j=await claude(msgs,sys);const tu=j.content.filter(b=>b.type==='tool_use');out=j.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim();if(!tu.length)break;msgs.push({role:'assistant',content:j.content});const rs=[];for(const t of tu){await db.query('insert into facts(text) values($1)',[String((t.input&&t.input.text)||'').slice(0,500)]);rs.push({type:'tool_result',tool_use_id:t.id,content:'saqlandi'})}msgs.push({role:'user',content:rs})}
 out=out||'Tushundim.';await db.query('insert into messages(role,content) values($1,$2)',['assistant',out]);res.json({reply:out})}catch(e){console.error(e);res.status(500).json({error:e.message})}});
+const {VOICELAB_API_KEY,VOICELAB_VOICE_ID}=process.env;
+app.post('/api/tts',auth,async(req,res)=>{try{
+if(!VOICELAB_API_KEY||!VOICELAB_VOICE_ID)return res.status(503).json({error:'VOICELAB_API_KEY yoki VOICELAB_VOICE_ID kiritilmagan'});
+const text=String(req.body.text||'').trim().slice(0,1500);if(!text)return res.status(400).json({error:`Bo'sh matn`});
+const H={Authorization:'Bearer '+VOICELAB_API_KEY.trim()};
+const msg=j=>typeof j.error==='string'?j.error:(j.error&&(j.error.message||j.error.code));
+const r=await fetch('https://api.voicelab.uz/v1/tts',{method:'POST',headers:{...H,'content-type':'application/json','Idempotency-Key':crypto.randomUUID()},body:JSON.stringify({text,language:'uz',voice_id:VOICELAB_VOICE_ID.trim(),speed:1})});
+if(r.status===200){res.set('content-type','audio/wav');return res.send(Buffer.from(await r.arrayBuffer()))}
+const j=await r.json().catch(()=>({}));
+if(r.status!==202)return res.status(502).json({error:msg(j)||('VoiceLab xato '+r.status)});
+for(let i=0;i<25;i++){await new Promise(z=>setTimeout(z,800));const g=await(await fetch('https://api.voicelab.uz'+j.status_url,{headers:H})).json();
+if(g.status==='completed'){const a=await fetch(g.audio_url);res.set('content-type','audio/wav');return res.send(Buffer.from(await a.arrayBuffer()))}
+if(g.status==='failed')return res.status(502).json({error:'Ovoz yaratilmadi'})}
+res.status(504).json({error:'Ovoz kechikdi'})}catch(e){res.status(500).json({error:e.message})}});
 app.listen(PORT,()=>console.log('Jarvis ishga tushdi',PORT));
