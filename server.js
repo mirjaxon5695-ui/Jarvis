@@ -12,7 +12,7 @@ const auth=(req,res,next)=>{const t=(req.headers.authorization||'').slice(7);JAR
 app.get('/api/history',auth,async(req,res)=>{try{const m=await db.query('select role,content from messages order by id desc limit 60');res.json(m.rows.reverse())}catch(e){res.status(500).json({error:e.message})}});
 const TOOLS=[{name:'eslab_qol',description:`Foydalanuvchi haqida yoki uning ishlari haqida muhim narsani doimiy xotiraga yozadi. Telefon va kompyuterda umumiy.`,input_schema:{type:'object',properties:{text:{type:'string'}},required:['text']}}];
 async function claude(messages,system){if(!ANTHROPIC_API_KEY||!ANTHROPIC_API_KEY.trim()){const n=Object.keys(process.env).filter(k=>/ANTH|API|KEY|CLAUDE/i.test(k));throw new Error(`ANTHROPIC_API_KEY topilmadi. Oxshash nomlar: ${n.join(', ')||'yoq'}`)}const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':ANTHROPIC_API_KEY.trim(),'anthropic-version':'2023-06-01'},body:JSON.stringify({model:MODEL,max_tokens:800,system,tools:TOOLS,messages})});const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||'Claude API xato');return j}
-const {GEMINI_API_KEY,GEMINI_MODEL='gemini-2.5-flash',BRAIN}=process.env;
+const {GEMINI_API_KEY,GEMINI_MODEL='gemini-3.8-flash',BRAIN}=process.env;
 const USE_GEMINI=BRAIN==='gemini'||(BRAIN!=='claude'&&!!GEMINI_API_KEY);
 async function askGemini(msgs,sys){
 if(!GEMINI_API_KEY||!GEMINI_API_KEY.trim())throw new Error('GEMINI_API_KEY topilmadi');
